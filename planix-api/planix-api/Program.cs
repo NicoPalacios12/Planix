@@ -1,0 +1,74 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using planix_api.Data;
+using planix_api.Models;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<PlanixContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<PlanixContext>();
+
+builder.Services.AddAuthentication(options =>
+{
+    // Indiquer à ASP.NET Core que nous procéderons à l'authentification par le biais d'un JWT
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+
+    options.SaveToken = true; // Sauvegarder les tokens côté serveur pour pouvoir valider leur authenticité
+    options.RequireHttpsMetadata = false; // Lors du développement on peut laisser à false
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateAudience = true,
+        ValidateIssuer = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"], 
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
+            .GetBytes(builder.Configuration["Jwt:Key"]!)) 
+    };
+});
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+        policy.AllowAnyOrigin();
+    });
+});
+
+
+var app = builder.Build();
+
+app.UseCors("AllowAll");
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
