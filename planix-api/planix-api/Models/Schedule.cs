@@ -9,7 +9,7 @@ namespace planix_api.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string UserId { get; set; }
-        public ICollection<Shift> Shifts { get; set; }
-        public User User { get; set; }
+        public ICollection<Shift>? Shifts { get; set; }
+        public User? User { get; set; }
     }
 }

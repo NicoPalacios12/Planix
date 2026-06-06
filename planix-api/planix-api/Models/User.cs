@@ -12,7 +12,7 @@ namespace planix_api.Models
         public string FullName {
             get { return FirstName + " " + LastName; }
         }
-        public ICollection<Schedule> Schedules { get; set; }
-        public ICollection<LeaveRequest> LeaveRequests { get; set; }
+        public ICollection<Schedule>? Schedules { get; set; }
+        public ICollection<LeaveRequest>? LeaveRequests { get; set; }
     }
 }

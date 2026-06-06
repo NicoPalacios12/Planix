@@ -11,6 +11,6 @@ namespace planix_api.Models
         public DateTime EndDate { get; set; }
         public string Status { get; set; }
         public string UserId { get; set; }
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }

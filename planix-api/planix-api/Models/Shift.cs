@@ -12,6 +12,6 @@ namespace planix_api.Models
         public int EndTime { get; set; }
         public int BreakMinutes { get; set; }
         public int ScheduleId { get; set; }
-        public Schedule Schedule { get; set; }
+        public Schedule? Schedule { get; set; }
     }
 }
