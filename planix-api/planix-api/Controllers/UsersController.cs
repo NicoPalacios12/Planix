@@ -77,7 +77,8 @@ namespace planix_api.Controllers
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     validTo = token.ValidTo,
-                    roles = roles
+                    roles = roles,
+                    fullName = user.FullName
                 });
             }
             else 
