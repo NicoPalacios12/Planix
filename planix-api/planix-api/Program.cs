@@ -82,6 +82,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<ShiftService>();
+builder.Services.AddScoped<LeaveRequestService>();
 
 var app = builder.Build();
 
