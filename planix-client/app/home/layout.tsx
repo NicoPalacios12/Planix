@@ -38,7 +38,12 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
                     <Link href="/home"><div className="text-orange-600 font-bold text-3xl p-3 tracking-tighter cursor-pointer">PLANIX</div></Link>
 
                     <div className="flex items-center pr-2 gap-2">
-                        {!loggedIn && <Link href="/home/account/login"><Button>Connexion</Button></Link>}
+                        {!loggedIn && (
+                            <>
+                                <Link href="/home/account/register"><Button>S'inscrire</Button></Link>
+                                <Link href="/home/account/login"><Button>Connexion</Button></Link>
+                            </>
+                        )}
                         {loggedIn && (
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">{fullName}</span>

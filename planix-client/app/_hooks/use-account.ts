@@ -37,6 +37,7 @@ export function useAccount() {
             localStorage.setItem("token", x.data.token);
             localStorage.setItem("roles", JSON.stringify(x.data.roles));
             localStorage.setItem("fullName", x.data.fullName)
+            localStorage.setItem("userId", x.data.userId)
 
             console.log(x.data)
             return x.data
@@ -51,6 +52,7 @@ export function useAccount() {
         localStorage.removeItem("token");
         localStorage.removeItem("roles");
         localStorage.removeItem("fullName")
+        localStorage.removeItem("userId")
         router.push("/home/account/login");
     }
 
