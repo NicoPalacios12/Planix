@@ -40,13 +40,19 @@ export default function Login() {
             return
         }
         setIsLoading(true)
+
         try {
             const data = await account.login(email.value, password.value)
 
             setLoggedIn(true)
             setFullName(data.fullName)
 
-            router.push("/home")
+            if (data.roles.includes("Admin")) {
+                router.push("/home/admin")
+            } else {
+                router.push("/home/employee")
+            }
+
         } catch (e) {
             setError("Identifiants incorrects.")
         } finally {

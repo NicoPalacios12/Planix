@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using planix_api.Data;
 using planix_api.Models;
+using planix_api.DTOs;
 
 namespace planix_api.Services
 {
@@ -15,11 +16,21 @@ namespace planix_api.Services
 
         private bool IsContextValid() => _context != null && _context.LeaveRequests != null;
 
-        public async Task<List<LeaveRequest>?> GetAll()
+        public async Task<List<LeaveRequestResponseDTO>?> GetAll()
         {
             if (!IsContextValid()) return null;
 
-            return await _context.LeaveRequests.ToListAsync();
+            return await _context.LeaveRequests
+                .Include(l => l.User)
+                .Select(l => new LeaveRequestResponseDTO
+                {
+                    Id = l.Id,
+                    StartDate = l.StartDate,
+                    EndDate = l.EndDate,
+                    Status = l.Status!,
+                    UserId = l.UserId,
+                    EmployeeFullName = l.User!.FullName
+                }).ToListAsync();
         }
 
         public async Task<List<LeaveRequest>?> GetByUserId(string userId)

@@ -27,9 +27,9 @@ namespace planix_api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequests()
+        public async Task<ActionResult<IEnumerable<LeaveRequestResponseDTO>>> GetLeaveRequests()
         {
-            List<LeaveRequest>? leaveRequests = await _leaveRequestService.GetAll();
+            List<LeaveRequestResponseDTO>? leaveRequests = await _leaveRequestService.GetAll();
             if(leaveRequests == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             return Ok(leaveRequests);
