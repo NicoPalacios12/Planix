@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -87,6 +88,21 @@ namespace planix_api.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "Invalid email or password" });
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<UserResponseDTO>>> GetUsers() 
+        {
+            var users = await _userManager.GetUsersInRoleAsync("Employee");
+            var result = users.Select(u => new UserResponseDTO
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email!
+            }).ToList();
+            return Ok(result);
         }
     }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useLeaveRequest } from "@/app/_hooks/use-leave-request"
+import { useUser } from "@/app/_hooks/use-user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
 
@@ -8,8 +9,11 @@ import { useEffect, useState } from "react"
 export default function AdminPage() {
 
     const leaveRequest = useLeaveRequest();
+    const user = useUser();
 
     const [conges, setConges] = useState([])
+
+    const [employees, setEmployes] = useState([])
 
     async function getAll() {
 
@@ -27,8 +31,14 @@ export default function AdminPage() {
         getAll()
     }
 
+    async function getEmployes() {
+        const data = await user.getAll()
+        setEmployes(data)
+    }
+
     useEffect(() => {
         getAll()
+        getEmployes()
     }, [])
 
 
@@ -66,7 +76,14 @@ export default function AdminPage() {
                 </TabsContent>
 
                 <TabsContent value="employes">
-
+                    <div className="flex flex-col gap-3 mt-4">
+                        {employees.map((e: any) => (
+                            <div key={e.id} className="border p-4 rounded-xl">
+                                <div className="font-medium">{e.firstName} {e.lastName}</div>
+                                <div className="text-sm text-gray-500">{e.email}</div>
+                            </div>
+                        ))}
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
