@@ -13,7 +13,7 @@ using planix_api.Services;
 
 namespace planix_api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class SchedulesController : ControllerBase
     {

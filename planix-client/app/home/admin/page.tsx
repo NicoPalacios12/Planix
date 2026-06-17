@@ -1,20 +1,46 @@
 "use client"
 
 import { useLeaveRequest } from "@/app/_hooks/use-leave-request"
+import { useSchedule } from "@/app/_hooks/use-schedule";
 import { useUser } from "@/app/_hooks/use-user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { useShift } from "@/app/_hooks/use-shift";
 
 
 export default function AdminPage() {
 
     const leaveRequest = useLeaveRequest();
     const user = useUser();
+    const schedule = useSchedule();
+    const shift = useShift();
 
     const [conges, setConges] = useState([])
 
     const [employees, setEmployes] = useState([])
 
+    //SCHEDULES
+    const [schedules, setSchedules] = useState([])
+    const [newStartDate, setNewStartDate] = useState("")
+    const [newEndDate, setNewEndDate] = useState("")
+    const [selectedUserId, setSelectedUserId] = useState("")
+
+    //SHIFTS
+    const [shifts, setShifts] = useState<any[]>([])
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [selectedCell, setSelectedCell] = useState<{ userId: string, date: string } | null>(null)
+    const [shiftStart, setShiftStart] = useState("")
+    const [shiftEnd, setShiftEnd] = useState("")
+    const [shiftBreak, setShiftBreak] = useState("0")
+    const [editingShiftId, setEditingShiftId] = useState<number | null>(null)
+
+    const weekStart = "2026-06-16" // dimanche
+    const weekEnd = "2026-06-22"   // samedi
+
+    const weekDays = ["2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-20", "2026-06-21", "2026-06-22"]
+
+    //LEAVE REQUESTS
     async function getAll() {
 
         const data = await leaveRequest.getAll()
@@ -26,19 +52,87 @@ export default function AdminPage() {
         getAll()
     }
 
-    async function handleDelete(id: number) {
-        await leaveRequest.remove(id)
-        getAll()
-    }
-
+    //EMPLOYEES
     async function getEmployes() {
         const data = await user.getAll()
         setEmployes(data)
     }
 
+    //SCHEDULES
+    async function getSchedules() {
+        const data = await schedule.getAll()
+        setSchedules(data)
+
+        const shiftsArrays = await Promise.all(
+            data.map((s: any) => shift.getByScheduleId(s.id))
+        )
+        setShifts(shiftsArrays.flat())
+    }
+
+    async function handleCreateSchedule() {
+        if (!newStartDate || !newEndDate || !selectedUserId) return
+        await schedule.create(newStartDate, newEndDate, selectedUserId)
+        getSchedules()
+    }
+
+    //SHIFTS
+    async function handleDeleteShift(id: number) {
+        await shift.remove(id)
+        getSchedules()
+    }
+
+
+    function openShiftDialog(userId: string, date: string) {
+        setEditingShiftId(null)
+        setSelectedCell({ userId, date })
+        setShiftStart("")
+        setShiftEnd("")
+        setShiftBreak("0")
+        setDialogOpen(true)
+    }
+
+    function openEditShiftDialog(s: any) {
+        setEditingShiftId(s.id)
+        setShiftStart(s.startTime.toString())
+        setShiftEnd(s.endTime.toString())
+        setShiftBreak(s.breakMinutes.toString())
+        setDialogOpen(true)
+    }
+    async function handleCreateShift() {
+        if (editingShiftId) {
+            const original = shifts.find((s: any) => s.id === editingShiftId)
+            await shift.update(editingShiftId, {
+                id: editingShiftId,
+                dayOfWeek: original.dayOfWeek,
+                date: original.date,
+                startTime: parseInt(shiftStart),
+                endTime: parseInt(shiftEnd),
+                breakMinutes: parseInt(shiftBreak),
+                scheduleId: original.scheduleId
+            })
+        } else {
+
+            if (!selectedCell) return
+            let userSchedule: any = schedules.find((s: any) =>
+                s.userId === selectedCell.userId &&
+                s.startDate.slice(0, 10) <= selectedCell.date &&
+                s.endDate.slice(0, 10) >= selectedCell.date
+            )
+            if (!userSchedule) {
+                userSchedule = await schedule.create(weekStart, weekEnd, selectedCell.userId)
+            }
+            if (!userSchedule) return
+            await shift.create("", selectedCell.date, parseInt(shiftStart), parseInt(shiftEnd), parseInt(shiftBreak), userSchedule.id)
+        }
+
+        setDialogOpen(false)
+        getSchedules()
+    }
+
     useEffect(() => {
         getAll()
         getEmployes()
+        getSchedules()
     }, [])
 
 
@@ -72,7 +166,61 @@ export default function AdminPage() {
                 </TabsContent>
 
                 <TabsContent value="horaires">
+                    <div className="grid grid-cols-8 border">
+                        <div className="border p-2 font-medium">Employé</div>
+                        {weekDays.map(day => (
+                            <div key={day} className="border p-2 font-medium text-center">{day.slice(5)}</div>
+                        ))}
 
+                        {employees.map((e: any) => (
+                            <Fragment key={e.id}>
+                                <div key={e.id} className="border p-2">{e.firstName} {e.lastName}</div>
+                                {weekDays.map(day => (
+                                    <div
+                                        key={day}
+                                        onClick={() => openShiftDialog(e.id, day)}
+                                        className="border p-2 min-h-[60px] cursor-pointer hover:bg-gray-50"
+                                    >
+                                        {shifts
+                                            .filter((s: any) => {
+                                                const sched: any = schedules.find((sc: any) => sc.id === s.scheduleId)
+                                                return sched?.userId === e.id && s.date.slice(0, 10) === day
+                                            })
+                                            .map((s: any) => (
+                                                <div key={s.id} onClick={(ev) => { ev.stopPropagation(); openEditShiftDialog(s) }} className="bg-blue-100 text-xs p-1 rounded mb-1 flex justify-between items-center group">
+                                                    <span>
+                                                        {s.startTime}h-{s.endTime}h
+                                                        {s.breakMinutes > 0 && <span className="text-gray-500"> ({s.breakMinutes}min)</span>}
+                                                    </span>
+                                                    <button
+                                                        onClick={(ev) => { ev.stopPropagation(); handleDeleteShift(s.id) }}
+                                                        className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                    </div>
+                                ))}
+                            </Fragment>
+                        ))}
+                    </div>
+                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{editingShiftId ? "Modifier le quart" : "Ajouter un quart"}</DialogTitle>
+                                <DialogDescription>Entrez les heures de début, de fin et la pause pour ce quart de travail.</DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-3">
+                                <input type="number" placeholder="Heure début (ex: 9)" value={shiftStart} onChange={e => setShiftStart(e.target.value)} className="border p-2 rounded" />
+                                <input type="number" placeholder="Heure fin (ex: 17)" value={shiftEnd} onChange={e => setShiftEnd(e.target.value)} className="border p-2 rounded" />
+                                <input type="number" placeholder="Pause (minutes)" value={shiftBreak} onChange={e => setShiftBreak(e.target.value)} className="border p-2 rounded" />
+                            </div>
+                            <DialogFooter>
+                                <button onClick={handleCreateShift} className="bg-blue-500 text-white px-4 py-2 rounded"> {editingShiftId ? "Modifier" : "Créer"}</button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </TabsContent>
 
                 <TabsContent value="employes">
