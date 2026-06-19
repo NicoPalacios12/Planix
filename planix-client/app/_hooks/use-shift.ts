@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "@/lib/axios"
 
 export function useShift() {
@@ -18,6 +19,7 @@ export function useShift() {
     }
 
     async function create(dayOfWeek: string, date: string, startTime: number, endTime: number, breakMinutes: number, scheduleId: number) {
+        console.log(dayOfWeek, date, startTime, endTime, breakMinutes, scheduleId)
         const x = await api.post("/api/Shifts", { dayOfWeek, date, startTime, endTime, breakMinutes, scheduleId })
         return x.data
     }
