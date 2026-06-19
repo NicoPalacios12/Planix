@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using planix_api.Data;
@@ -11,9 +12,11 @@ using planix_api.Data;
 namespace planix_api.Migrations
 {
     [DbContext(typeof(PlanixContext))]
-    partial class PlanixContextModelSnapshot : ModelSnapshot
+    [Migration("20260619012844_AddReasonLeaveRequest")]
+    partial class AddReasonLeaveRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -342,7 +345,7 @@ namespace planix_api.Migrations
                         {
                             Id = "11111111-1111-1111-1111-111111111111",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2f47333c-4ee8-4428-a37a-4f4524bc0b35",
+                            ConcurrencyStamp = "86b01e13-8d8f-47ac-b9dc-14e2bd1f1ff2",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Admin",
@@ -350,7 +353,7 @@ namespace planix_api.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDOVsDhPwPn9tfO63HuEXUFJtGsIr2lYYlBPt4vnFXrEHKlbDlXZlCSW1C5c8YYLmw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOFoh55F2+neNQNdSzt5EKNILUxN5HKrzdGPjW4W7S8KWqDU2ycGSOi252Yd8rdHHA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "fixed-security-stamp-planix-admin",
                             TwoFactorEnabled = false,

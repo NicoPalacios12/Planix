@@ -28,6 +28,7 @@ namespace planix_api.Services
                     StartDate = l.StartDate,
                     EndDate = l.EndDate,
                     Status = l.Status!,
+                    Reason = l.Reason,
                     UserId = l.UserId,
                     EmployeeFullName = l.User!.FullName
                 }).ToListAsync();

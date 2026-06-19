@@ -86,7 +86,9 @@ namespace planix_api.Controllers
             {
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
+                Reason = dto.Reason,
                 UserId = dto.UserId
+
             };
             LeaveRequest? newLeaveRequest = await _leaveRequestService.Create(leaveRequest);
             if (newLeaveRequest == null) return StatusCode(StatusCodes.Status500InternalServerError);

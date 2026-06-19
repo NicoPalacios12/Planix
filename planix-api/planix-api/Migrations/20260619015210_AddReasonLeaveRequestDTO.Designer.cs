@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using planix_api.Data;
@@ -11,9 +12,11 @@ using planix_api.Data;
 namespace planix_api.Migrations
 {
     [DbContext(typeof(PlanixContext))]
-    partial class PlanixContextModelSnapshot : ModelSnapshot
+    [Migration("20260619015210_AddReasonLeaveRequestDTO")]
+    partial class AddReasonLeaveRequestDTO
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

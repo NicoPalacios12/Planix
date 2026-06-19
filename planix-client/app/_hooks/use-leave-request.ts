@@ -14,8 +14,8 @@ export function useLeaveRequest() {
         return x.data;
     }
 
-    async function create(startDate: string, endDate: string, userId: string) {
-        const x = await api.post("/api/LeaveRequests", { startDate, endDate, userId })
+    async function create(startDate: string, endDate: string, reason: string, userId: string) {
+        const x = await api.post("/api/LeaveRequests", { startDate, endDate, reason, userId })
 
         return x.data;
     }

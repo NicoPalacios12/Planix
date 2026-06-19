@@ -156,6 +156,7 @@ export default function AdminPage() {
                                 <div>
                                     <div className="font-medium">{c.employeeFullName}</div>
                                     <div className="text-sm text-gray-500">{c.startDate.slice(0, 10)} → {c.endDate.slice(0, 10)}</div>
+                                    <div className="text-sm text-gray-500">{c.reason}</div>
                                     <div className="text-sm">Statut : {c.status}</div>
                                 </div>
                                 {c.status === "Pending" && (
