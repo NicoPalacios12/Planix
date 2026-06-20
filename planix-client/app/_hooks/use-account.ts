@@ -18,10 +18,9 @@ export function useAccount() {
                 password: password,
                 passwordConfirm: passwordConfirm
             });
-            console.log(x.data)
             return x.data
         } catch (error) {
-            console.log("Register failed", error)
+            
             throw error
         }
 
@@ -39,10 +38,10 @@ export function useAccount() {
             localStorage.setItem("fullName", x.data.fullName)
             localStorage.setItem("userId", x.data.userId)
 
-            console.log(x.data)
+            
             return x.data
         } catch (error) {
-            console.log("Login failed", error)
+            
             throw error
         }
 

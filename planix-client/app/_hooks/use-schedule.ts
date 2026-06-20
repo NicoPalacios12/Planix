@@ -22,7 +22,7 @@ export function useSchedule() {
     }
 
     async function create(startDate: string, endDate: string, userId: string) {
-        console.log("horaires:", startDate, endDate, userId)
+        
         const x = await api.post("/api/Schedules/PostSchedule", { startDate, endDate, userId })
         return x.data
     }

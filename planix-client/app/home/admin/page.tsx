@@ -39,10 +39,50 @@ export default function AdminPage() {
     const [shiftBreak, setShiftBreak] = useState("0")
     const [editingShiftId, setEditingShiftId] = useState<number | null>(null)
 
-    const weekStart = "2026-06-16" // dimanche
-    const weekEnd = "2026-06-22"   // samedi
+   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+        const today = new Date()
+        const day = today.getDay() // 0 = dimanche
+        const sunday = new Date(today)
+        sunday.setDate(today.getDate() - day)
+        return sunday
+    })
 
-    const weekDays = ["2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-20", "2026-06-21", "2026-06-22"]
+    function getWeekDays(start: Date) {
+        const days: string[] = []
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(start)
+            d.setDate(start.getDate() + i)
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+            days.push(dateStr)
+        }
+        return days
+    }
+
+    const weekDays = getWeekDays(currentWeekStart)
+
+    function getDayName(dateString: string) {
+        const date = new Date(dateString)
+        const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
+        return jours[date.getDay()]
+    }
+
+    function getMonthLabel(dateStr: string) {
+    const moisNoms = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+    const date = new Date(dateStr + "T12:00:00")
+    return `${moisNoms[date.getMonth()]} ${date.getFullYear()}`
+}
+
+    function previousWeek() {
+        const newStart = new Date(currentWeekStart)
+        newStart.setDate(currentWeekStart.getDate() - 7)
+        setCurrentWeekStart(newStart)
+    }
+
+    function nextWeek() {
+        const newStart = new Date(currentWeekStart)
+        newStart.setDate(currentWeekStart.getDate() + 7)
+        setCurrentWeekStart(newStart)
+    }
 
     //LEAVE REQUESTS
     async function getAll() {
@@ -123,7 +163,7 @@ export default function AdminPage() {
                 s.endDate.slice(0, 10) >= selectedCell.date
             )
             if (!userSchedule) {
-                userSchedule = await schedule.create(weekStart + "T12:00:00", weekEnd + "T12:00:00", selectedCell.userId)
+                userSchedule = await schedule.create(newStartDate + "T12:00:00", newEndDate + "T12:00:00", selectedCell.userId)
             }
             if (!userSchedule) return
             await shift.create("", selectedCell.date + "T12:00:00", parseInt(shiftStart), parseInt(shiftEnd), parseInt(shiftBreak), userSchedule.id)
@@ -171,15 +211,25 @@ export default function AdminPage() {
                 </TabsContent>
 
                 <TabsContent value="horaires">
-                    <div className="grid grid-cols-8 border">
+
+                    <div className="flex items-center gap-4 mb-4">
+                        <button onClick={previousWeek} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">←</button>
+                        
+                        <h2 className="text-lg font-medium">{getMonthLabel(weekDays[0])}</h2>
+                        <button onClick={nextWeek} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">→</button>
+                    </div>
+
+                   <div className="grid grid-cols-8 border">
                         <div className="border p-2 font-medium">Employé</div>
                         {weekDays.map(day => (
-                            <div key={day} className="border p-2 font-medium text-center">{day.slice(5)}</div>
+                            <div key={day} className="border p-2 font-medium text-center">
+                                {getDayName(day).slice(0, 3)} {day.slice(8, 10)}
+                            </div>
                         ))}
 
                         {employees.map((e: any) => (
                             <Fragment key={e.id}>
-                                <div key={e.id} className="border p-2">{e.firstName} {e.lastName}</div>
+                                <div className="border p-2">{e.firstName} {e.lastName}</div>
                                 {weekDays.map(day => (
                                     <div
                                         key={day}
@@ -197,12 +247,7 @@ export default function AdminPage() {
                                                         {s.startTime}h-{s.endTime}h
                                                         {s.breakMinutes > 0 && <span className="text-gray-500"> ({s.breakMinutes}min)</span>}
                                                     </span>
-                                                    <button
-                                                        onClick={(ev) => { ev.stopPropagation(); handleDeleteShift(s.id) }}
-                                                        className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold"
-                                                    >
-                                                        ×
-                                                    </button>
+                                                    <button onClick={(ev) => { ev.stopPropagation(); handleDeleteShift(s.id) }} className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold">×</button>
                                                 </div>
                                             ))}
                                     </div>
@@ -210,6 +255,7 @@ export default function AdminPage() {
                             </Fragment>
                         ))}
                     </div>
+                    
                     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                         <DialogContent>
                             <DialogHeader>
