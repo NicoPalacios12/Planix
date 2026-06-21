@@ -1,10 +1,10 @@
 "use client";
 
-import { Search } from "lucide-react";
 import Link from "next/link";
 import { createContext, useEffect, useState } from "react";
 import Button from "../_components/_mini-components/button";
 import { useAccount } from "../_hooks/use-account";
+import { useRouter } from "next/navigation";
 
 type AccountContextType = {
     loggedIn: boolean
@@ -16,6 +16,8 @@ type AccountContextType = {
 export const AccountContext = createContext<AccountContextType | null>(null);
 
 export default function HomeLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+
+    const router = useRouter();
 
     const [loggedIn, setLoggedIn] = useState<boolean>(false);
     const [fullName, setFullName] = useState<string>("");
@@ -40,13 +42,13 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
                     <div className="flex items-center pr-2 gap-2">
                         {!loggedIn && (
                             <>
-                                <Link href="/home/account/register"><Button>S'inscrire</Button></Link>
                                 <Link href="/home/account/login"><Button>Connexion</Button></Link>
                             </>
                         )}
                         {loggedIn && (
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">{fullName}</span>
+                                <Button fct={() => router.push("/home/profile")}>Mon profil</Button>
                                 <Button fct={() => {
                                     account.logOut()
                                     setLoggedIn(false)

@@ -22,7 +22,12 @@ export default function AdminPage() {
 
     const [conges, setConges] = useState([])
 
+    //EMPLOYEES
     const [employees, setEmployes] = useState([])
+    const [newFirstName, setNewFirstName] = useState("")
+    const [newLastName, setNewLastName] = useState("")
+    const [newEmail, setNewEmail] = useState("")
+    const [tempPasswordResult, setTempPasswordResult] = useState<string | null>(null)
 
     //SCHEDULES
     const [schedules, setSchedules] = useState([])
@@ -39,6 +44,7 @@ export default function AdminPage() {
     const [shiftBreak, setShiftBreak] = useState("0")
     const [editingShiftId, setEditingShiftId] = useState<number | null>(null)
 
+    //WEEK
    const [currentWeekStart, setCurrentWeekStart] = useState(() => {
         const today = new Date()
         const day = today.getDay() // 0 = dimanche
@@ -67,10 +73,10 @@ export default function AdminPage() {
     }
 
     function getMonthLabel(dateStr: string) {
-    const moisNoms = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
-    const date = new Date(dateStr + "T12:00:00")
-    return `${moisNoms[date.getMonth()]} ${date.getFullYear()}`
-}
+        const moisNoms = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+        const date = new Date(dateStr + "T12:00:00")
+        return `${moisNoms[date.getMonth()]} ${date.getFullYear()}`
+    }
 
     function previousWeek() {
         const newStart = new Date(currentWeekStart)
@@ -84,6 +90,7 @@ export default function AdminPage() {
         setCurrentWeekStart(newStart)
     }
 
+    
     //LEAVE REQUESTS
     async function getAll() {
 
@@ -91,7 +98,7 @@ export default function AdminPage() {
         setConges(data)
     }
 
-    async function handleUpdateStatus(id: number, status: string) {
+    async function updateStatus(id: number, status: string) {
         await leaveRequest.updateStatus(id, status)
         getAll()
     }
@@ -100,6 +107,19 @@ export default function AdminPage() {
     async function getEmployes() {
         const data = await user.getAll()
         setEmployes(data)
+    }
+
+    //CREATE EMPLOYEE
+    async function createEmployee() {
+        if (!newFirstName || !newLastName || !newEmail) return
+
+        const result = await user.createEmployee(newFirstName, newLastName, newEmail)
+        setTempPasswordResult(result.tempPassword)
+
+        setNewFirstName("")
+        setNewLastName("")
+        setNewEmail("")
+        getEmployes()
     }
 
     //SCHEDULES
@@ -113,14 +133,8 @@ export default function AdminPage() {
         setShifts(shiftsArrays.flat())
     }
 
-    async function handleCreateSchedule() {
-        if (!newStartDate || !newEndDate || !selectedUserId) return
-        await schedule.create(newStartDate, newEndDate, selectedUserId)
-        getSchedules()
-    }
-
     //SHIFTS
-    async function handleDeleteShift(id: number) {
+    async function deleteShift(id: number) {
         await shift.remove(id)
         getSchedules()
     }
@@ -142,7 +156,7 @@ export default function AdminPage() {
         setShiftBreak(s.breakMinutes.toString())
         setDialogOpen(true)
     }
-    async function handleCreateShift() {
+    async function createShift() {
         if (editingShiftId) {
             const original = shifts.find((s: any) => s.id === editingShiftId)
             await shift.update(editingShiftId, {
@@ -201,8 +215,8 @@ export default function AdminPage() {
                                 </div>
                                 {c.status === "Pending" && (
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleUpdateStatus(c.id, "Approved")} className="bg-green-500 text-white px-3 py-1 rounded">Approuver</button>
-                                        <button onClick={() => handleUpdateStatus(c.id, "Rejected")} className="bg-green-500 text-white px-3 py-1 rounded">Refuser</button>
+                                        <button onClick={() => updateStatus(c.id, "Approved")} className="bg-green-500 text-white px-3 py-1 rounded">Approuver</button>
+                                        <button onClick={() => updateStatus(c.id, "Rejected")} className="bg-green-500 text-white px-3 py-1 rounded">Refuser</button>
                                     </div>
                                 )}
                             </div>
@@ -247,7 +261,7 @@ export default function AdminPage() {
                                                         {s.startTime}h-{s.endTime}h
                                                         {s.breakMinutes > 0 && <span className="text-gray-500"> ({s.breakMinutes}min)</span>}
                                                     </span>
-                                                    <button onClick={(ev) => { ev.stopPropagation(); handleDeleteShift(s.id) }} className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold">×</button>
+                                                    <button onClick={(ev) => { ev.stopPropagation(); deleteShift(s.id) }} className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold">×</button>
                                                 </div>
                                             ))}
                                     </div>
@@ -268,14 +282,31 @@ export default function AdminPage() {
                                 <input type="number" placeholder="Pause (minutes)" value={shiftBreak} onChange={e => setShiftBreak(e.target.value)} className="border p-2 rounded" />
                             </div>
                             <DialogFooter>
-                                <button onClick={handleCreateShift} className="bg-blue-500 text-white px-4 py-2 rounded"> {editingShiftId ? "Modifier" : "Créer"}</button>
+                                <button onClick={createShift} className="bg-blue-500 text-white px-4 py-2 rounded"> {editingShiftId ? "Modifier" : "Créer"}</button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </TabsContent>
 
                 <TabsContent value="employes">
-                    <div className="flex flex-col gap-3 mt-4">
+                    <div className="border p-4 rounded-xl mb-4">
+                        <h3 className="font-medium mb-3">Ajouter un employé</h3>
+                        <div className="flex flex-col gap-2">
+                            <input type="text" placeholder="Prénom" value={newFirstName} onChange={e => setNewFirstName(e.target.value)} className="border p-2 rounded" />
+                            <input type="text" placeholder="Nom" value={newLastName} onChange={e => setNewLastName(e.target.value)} className="border p-2 rounded" />
+                            <input type="email" placeholder="Email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="border p-2 rounded" />
+                            <button onClick={createEmployee} className="bg-blue-500 text-white p-2 rounded">Créer</button>
+                        </div>
+
+                        {tempPasswordResult && (
+                            <div className="mt-3 bg-yellow-50 border border-yellow-300 p-3 rounded">
+                                <p className="text-sm font-medium">Mot de passe temporaire (à communiquer à l&apos;employé) :</p>
+                                <p className="font-mono">{tempPasswordResult}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-3">
                         {employees.map((e: any) => (
                             <div key={e.id} className="border p-4 rounded-xl">
                                 <div className="font-medium">{e.firstName} {e.lastName}</div>

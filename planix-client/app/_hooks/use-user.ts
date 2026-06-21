@@ -8,5 +8,14 @@ export function useUser() {
         return x.data
     }
 
-    return { getAll }
+    async function createEmployee(firstName: string, lastName: string, email: string) {
+        const x = await api.post("/api/Users/CreateEmployee", {
+            firstName,
+            lastName,
+            email
+        })
+        return x.data
+    }
+
+    return { getAll, createEmployee }
 }

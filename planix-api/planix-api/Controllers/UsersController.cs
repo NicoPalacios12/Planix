@@ -23,35 +23,7 @@ namespace planix_api.Controllers
             _userManager = userManager;
             _configuration = configuration;
         }
-        [HttpPost]
-        public async Task<ActionResult> Register(RegisterDTO register) 
-        {
-            if (register.Password != register.PasswordConfirm) 
-            {
-                return StatusCode(StatusCodes.Status400BadRequest,
-                new { Message = "Les deux mots de passe spécifiés sont différents." });
-            }
-            User user = new User()
-            {
-                UserName = register.Email,
-                FirstName = register.FirstName,
-                LastName = register.LastName,
-                Email = register.Email
-            };
-            IdentityResult identityResult = await _userManager.CreateAsync(user,register.Password);
-
-            if (!identityResult.Succeeded)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest,
-                    new { Errors = identityResult.Errors });
-            }
-            else 
-            {
-                await _userManager.AddToRoleAsync(user, "Employee");
-                return Ok(new { Message = "Sign-up successful" });
-            }
-        }
-
+        
         [HttpPost]
         public async Task<ActionResult> Login(LoginDTO login) 
         {
@@ -88,6 +60,81 @@ namespace planix_api.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "Invalid email or password" });
             }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> CreateEmployee(CreateEmployeeDTO dto)
+        {
+            string tempPassword = GenerateTempPassword();
+
+            User user = new User()
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+            };
+
+            IdentityResult identityResult = await _userManager.CreateAsync(user, tempPassword);
+
+            if (!identityResult.Succeeded) 
+            {
+                return BadRequest(new { Errors = identityResult.Errors });
+            }
+
+            await _userManager.AddToRoleAsync(user, "Employee");
+
+            return Ok(new { Message = "Employé créé", tempPassword = tempPassword, Email = user.Email });
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult> GetProfil() 
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            User? user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            return Ok(new
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+            });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ChangePassword(ChangePasswordDTO dto) 
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            User? user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            if (dto.NewPassword != dto.ConfirmPassword) 
+            {
+                return BadRequest(new { Message = "Les mots de passe ne correspondent pas" });
+            }
+
+            IdentityResult result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword,dto.NewPassword);
+
+            if (!result.Succeeded) 
+            {
+                return BadRequest(new { Errors = result.Errors });
+            }
+
+            return Ok(new { Message = "Mot de passe changé avec succès" });
+        }
+
+        private string GenerateTempPassword() 
+        {
+            return "Planix" + new Random().Next(1000, 9999) + "$";
         }
 
         [HttpGet]

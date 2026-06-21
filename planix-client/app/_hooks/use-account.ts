@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/lib/axios"
 import { useRouter } from "next/navigation";
 
 
@@ -8,28 +8,11 @@ export function useAccount() {
 
     const apiDomain = process.env.NEXT_PUBLIC_API_URL
 
-    async function register(firstName: string, lastName: string, email: string, password: string, passwordConfirm: string) {
-
-        try {
-            const x = await axios.post(apiDomain + "api/Users/Register", {
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password,
-                passwordConfirm: passwordConfirm
-            });
-            return x.data
-        } catch (error) {
-            
-            throw error
-        }
-
-    }
 
     async function login(email: string, password: string) {
 
         try {
-            const x = await axios.post(apiDomain + "api/Users/Login", {
+            const x = await api.post(apiDomain + "api/Users/Login", {
                 email: email,
                 password: password,
             });
@@ -47,6 +30,20 @@ export function useAccount() {
 
     }
 
+    async function getProfile(){
+        const x = await api.get("/api/Users/GetProfil/me")
+        return x.data
+    }
+
+    async function changePassword(currentPassword: string, newPassword: string, confirmPassword: string) {
+        const x = await api.post("/api/Users/ChangePassword", {
+            currentPassword,
+            newPassword,
+            confirmPassword
+        })
+        return x.data
+    }
+
     async function logOut() {
         localStorage.removeItem("token");
         localStorage.removeItem("roles");
@@ -55,6 +52,6 @@ export function useAccount() {
         router.push("/home/account/login");
     }
 
-    return { register, login, logOut }
+    return { login, getProfile, changePassword, logOut }
 
 }
