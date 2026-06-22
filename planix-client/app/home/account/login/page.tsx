@@ -47,11 +47,7 @@ export default function Login() {
             setLoggedIn(true)
             setFullName(data.fullName)
 
-            if (data.roles.includes("Admin")) {
-                router.push("/home/admin")
-            } else {
-                router.push("/home/employee")
-            }
+            account.redirectByRole(data.roles)
 
         } catch (e) {
             setError("Identifiants incorrects.")

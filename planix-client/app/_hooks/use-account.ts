@@ -6,13 +6,11 @@ export function useAccount() {
 
     const router = useRouter();
 
-    const apiDomain = process.env.NEXT_PUBLIC_API_URL
-
 
     async function login(email: string, password: string) {
 
         try {
-            const x = await api.post(apiDomain + "api/Users/Login", {
+            const x = await api.post("/api/Users/Login", {
                 email: email,
                 password: password,
             });
@@ -52,6 +50,14 @@ export function useAccount() {
         router.push("/home/account/login");
     }
 
-    return { login, getProfile, changePassword, logOut }
+    function redirectByRole(roles: string[]){
+        if (roles?.includes("Admin")) {
+            router.push("/home/admin");
+        } else {
+            router.push("/home/employee");
+        }
+    }
+
+    return { login, getProfile, changePassword, logOut, redirectByRole }
 
 }
