@@ -1,10 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAccount } from "../_hooks/use-account";
 
 export default function Home() {
-    const router = useRouter();
     const account = useAccount();
     useEffect(() => {
         const rolesJson = localStorage.getItem("roles");
@@ -12,7 +11,7 @@ export default function Home() {
 
         const roles = JSON.parse(rolesJson);
         account.redirectByRole(roles);
-    }, [router]);
+    }, []);
 
     return (
         <div className="p-8">
