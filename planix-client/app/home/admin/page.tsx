@@ -244,13 +244,23 @@ export default function AdminPage() {
                         {employees.map((e: any) => (
                             <Fragment key={e.id}>
                                 <div className="border p-2">{e.firstName} {e.lastName}</div>
-                                {weekDays.map(day => (
+                                {weekDays.map(day => {
+                                    const isOnApprovedLeave = conges.some((c:any) =>
+                                        c.userId === e.id &&
+                                        c.status === "Approved" &&
+                                    day >= c.startDate.slice(0, 10) &&
+                                    day <= c.endDate.slice(0, 10)
+                                    )
+                                return (
                                     <div
                                         key={day}
-                                        onClick={() => openShiftDialog(e.id, day)}
-                                        className="border p-2 min-h-[60px] cursor-pointer hover:bg-gray-50 flex flex-col"
+                                        onClick={() => !isOnApprovedLeave && openShiftDialog(e.id, day)}
+                                        className={`border p-2 min-h-[60px] flex flex-col ${isOnApprovedLeave ? "bg-gray-300 cursor-not-allowed"  : "cursor-pointer hover:bg-gray-200"}`}
                                     >
-                                        {shifts
+                                        {isOnApprovedLeave ? (
+                                            <div className="text-red-500 text-base text-center">Congé</div>
+                                        ) : (
+                                            shifts
                                             .filter((s: any) => {
                                                 const sched: any = schedules.find((sc: any) => sc.id === s.scheduleId)
                                                 return sched?.userId === e.id && s.date.slice(0, 10) === day
@@ -263,9 +273,11 @@ export default function AdminPage() {
                                                     </span>
                                                     <button onClick={(ev) => { ev.stopPropagation(); deleteShift(s.id) }} className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold">×</button>
                                                 </div>
-                                            ))}
+                                            ))
+                                        )}
+                                        
                                     </div>
-                                ))}
+                                )})}
                             </Fragment>
                         ))}
                     </div>

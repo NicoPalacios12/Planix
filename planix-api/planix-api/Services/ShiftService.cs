@@ -43,6 +43,8 @@ namespace planix_api.Services
         {
             if (!IsContextValid()) return null;
 
+            if (await HasApprovedLeaveRequest(shift.ScheduleId, shift.Date)) return null;
+
             _context.Shifts.Add(shift);
             await _context.SaveChangesAsync();
             return shift;
@@ -51,6 +53,8 @@ namespace planix_api.Services
         public async Task<Shift?> Update(int id, Shift shift)
         {
             if (!IsContextValid()) return null;
+
+            if (await HasApprovedLeaveRequest(shift.ScheduleId, shift.Date)) return null;
 
             _context.Entry(shift).State = EntityState.Modified;
             try
@@ -77,6 +81,19 @@ namespace planix_api.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        private async Task<bool> HasApprovedLeaveRequest(int scheduleId, DateTime shiftDate) 
+        {
+            Schedule? schedule = await _context.Schedules.FindAsync(scheduleId);
+            if (schedule == null) return false;
+
+            return await _context.LeaveRequests.AnyAsync(lr =>
+               lr.UserId == schedule.UserId &&
+               lr.Status == "Approved" &&
+               shiftDate.Date >= lr.StartDate.Date &&
+               shiftDate.Date <= lr.EndDate.Date
+           );
         }
 
     }
