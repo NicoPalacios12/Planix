@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 "use client"
 
@@ -33,9 +31,6 @@ export default function AdminPage() {
 
     //SCHEDULES
     const [schedules, setSchedules] = useState([])
-    const [newStartDate, setNewStartDate] = useState("")
-    const [newEndDate, setNewEndDate] = useState("")
-    const [selectedUserId, setSelectedUserId] = useState("")
 
     //SHIFTS
     const [shifts, setShifts] = useState<any[]>([])
@@ -125,7 +120,7 @@ export default function AdminPage() {
             getAll()
             getSchedules()
         }catch(error){
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -242,7 +237,7 @@ export default function AdminPage() {
                                 {c.status === "Pending" && (
                                     <div className="flex gap-2">
                                         <button onClick={() => updateStatus(c.id, "Approved")} className="bg-green-500 text-white px-3 py-1 rounded">Approuver</button>
-                                        <button onClick={() => updateStatus(c.id, "Rejected")} className="bg-green-500 text-white px-3 py-1 rounded">Refuser</button>
+                                        <button onClick={() => updateStatus(c.id, "Rejected")} className="bg-red-500 text-white px-3 py-1 rounded">Refuser</button>
                                     </div>
                                 )}
                             </div>
