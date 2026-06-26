@@ -62,17 +62,43 @@ namespace planix_api.Services
             return leaveRequest;
         }
 
-        public async Task<LeaveRequest?> UpdateStatus(int id, string status)
+        public enum UpdateStatusResult
+        { 
+            Success,
+            NotFound,
+            ShiftNeedsConfirmation
+        }
+
+        public async Task<(UpdateStatusResult result, LeaveRequest? leaveRequest)> UpdateStatus(
+            int id, string status, bool confirmShiftDeletion)
         {
-            if (!IsContextValid()) return null;
+            if (!IsContextValid()) return (UpdateStatusResult.NotFound, null);
 
             LeaveRequest? leaveRequest = await _context.LeaveRequests.FindAsync(id);
-            if (leaveRequest == null) return null;
+            if (leaveRequest == null) return (UpdateStatusResult.NotFound, null);
+
+            if (status == "Approved")
+            {
+                List<Shift> conflictingShifts = await _context.Shifts
+                    .Where(s => s.Schedule.UserId == leaveRequest.UserId &&
+                                s.Date.Date >= leaveRequest.StartDate.Date &&
+                                s.Date.Date <= leaveRequest.EndDate.Date)
+                    .ToListAsync();
+
+                if (conflictingShifts.Any())
+                {
+                    
+                    if (!confirmShiftDeletion)
+                        return (UpdateStatusResult.ShiftNeedsConfirmation, leaveRequest);
+
+                    
+                    _context.Shifts.RemoveRange(conflictingShifts);
+                }
+            }
 
             leaveRequest.Status = status;
             await _context.SaveChangesAsync();
-
-            return leaveRequest;
+            return (UpdateStatusResult.Success, leaveRequest);
         }
 
         public async Task<bool> Delete(int id)

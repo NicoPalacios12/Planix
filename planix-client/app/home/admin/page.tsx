@@ -20,7 +20,9 @@ export default function AdminPage() {
     const schedule = useSchedule();
     const shift = useShift();
 
+    //LEAVE REQUESTS
     const [conges, setConges] = useState([])
+    const[pendingConge, setPendingConge] = useState<any | null>(null)
 
     //EMPLOYEES
     const [employees, setEmployes] = useState([])
@@ -99,8 +101,32 @@ export default function AdminPage() {
     }
 
     async function updateStatus(id: number, status: string) {
-        await leaveRequest.updateStatus(id, status)
-        getAll()
+        try{
+            await leaveRequest.updateStatus(id, status)
+            getAll()
+        }
+        catch (error: any) {
+            if(error.response?.status === 409){
+                const conge = conges.find((c: any) => c.id === id)
+                setPendingConge(conge)
+            } else{
+                console.error(error)
+            }
+        }
+            
+        
+    }
+
+    async function confirmLeaveRequest() {
+        if(!pendingConge) return
+        try{
+            await leaveRequest.updateStatus(pendingConge.id, "Approved", true)
+            setPendingConge(null)
+            getAll()
+            getSchedules()
+        }catch(error){
+            console.log(error)
+        }
     }
 
     //EMPLOYEES
@@ -177,7 +203,7 @@ export default function AdminPage() {
                 s.endDate.slice(0, 10) >= selectedCell.date
             )
             if (!userSchedule) {
-                userSchedule = await schedule.create(newStartDate + "T12:00:00", newEndDate + "T12:00:00", selectedCell.userId)
+                userSchedule = await schedule.create(weekDays[0] + "T12:00:00", weekDays[6] + "T12:00:00", selectedCell.userId)
             }
             if (!userSchedule) return
             await shift.create("", selectedCell.date + "T12:00:00", parseInt(shiftStart), parseInt(shiftEnd), parseInt(shiftBreak), userSchedule.id)
@@ -222,6 +248,30 @@ export default function AdminPage() {
                             </div>
                         ))}
                     </div>
+
+                    <Dialog open={pendingConge !== null} onOpenChange={(open) => !open && setPendingConge(null)}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Confirmer l&apos;approbation</DialogTitle>
+                                <DialogDescription>
+                                    Ce congé chevauche un ou plusieurs quarts déjà planifiés. 
+                                    Approuver le congé supprimera ces quarts. Voulez-vous continuer ?
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <button 
+                                    onClick={() => setPendingConge(null)} 
+                                    className="bg-gray-200 px-4 py-2 rounded">
+                                    Annuler
+                                </button>
+                                <button 
+                                    onClick={confirmLeaveRequest} 
+                                    className="bg-red-500 text-white px-4 py-2 rounded">
+                                    Approuver et supprimer les quarts
+                                </button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </TabsContent>
 
                 <TabsContent value="horaires">
@@ -298,6 +348,8 @@ export default function AdminPage() {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+
+
                 </TabsContent>
 
                 <TabsContent value="employes">

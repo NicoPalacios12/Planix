@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static planix_api.Services.LeaveRequestService;
 
 namespace planix_api.Controllers
 {
@@ -67,15 +68,23 @@ namespace planix_api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus(int id, UpdateStatusDTO dto)
         {
-            if (dto.Status != "Approved" && dto.Status != "Rejected") 
+            if (dto.Status != "Approved" && dto.Status != "Rejected")
+                return BadRequest(new { Message = "Status must be 'Approved' or 'Rejected'." });
+
+            var (result, leaveRequest) = await _leaveRequestService.UpdateStatus(
+                id, dto.Status, dto.ConfirmShiftDeletion);
+
+            return result switch
             {
-                return BadRequest(new { Message = "Status must be 'Approved' or 'Rejected'. " });
-            }
-
-            LeaveRequest? updatedLeaveRequest = await _leaveRequestService.UpdateStatus(id, dto.Status);
-            if (updatedLeaveRequest == null) return NotFound();
-
-            return Ok(updatedLeaveRequest);
+                UpdateStatusResult.NotFound => NotFound(),
+                UpdateStatusResult.ShiftNeedsConfirmation => Conflict(new
+                {
+                    Message = "Ce congé chevauche un ou plusieurs quarts déjà planifiés. Confirmez pour les supprimer.",
+                    RequiresConfirmation = true
+                }),
+                UpdateStatusResult.Success => Ok(leaveRequest),
+                _ => StatusCode(500)
+            };
         }
 
         [HttpPost]

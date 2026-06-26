@@ -20,8 +20,8 @@ export function useLeaveRequest() {
         return x.data;
     }
 
-    async function updateStatus(id: number, status: string) {
-        const x = await api.patch("/api/LeaveRequests/" + id, { status })
+    async function updateStatus(id: number, status: string, confirmShiftDeletion: boolean = false) {
+        const x = await api.patch("/api/LeaveRequests/" + id, { status, confirmShiftDeletion })
 
         return x.data;
     }
