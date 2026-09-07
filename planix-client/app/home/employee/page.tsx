@@ -171,7 +171,8 @@ export default function EmployeeHome() {
                                                             {s.startTime}h-{s.endTime}h
                                                             {s.breakMinutes  > 0 && ` (Pause ${s.breakMinutes }h)`}
                                                         </div>
-                                                    ))}
+                                                    ))
+                                                }
                                             </>
                                         )}
                                     </div>

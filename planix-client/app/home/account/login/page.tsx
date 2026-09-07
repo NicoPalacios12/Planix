@@ -60,21 +60,63 @@ export default function Login() {
 
         <div className="flex justify-center">
             <div className="bg-white w-sm p-8 rounded-xl mt-5">
-                <div className="text-xl font-bold text-center mb-3">Connexion</div>
-                <div className="text-sm text-gray-600 text-center">Saisissez votre email et votre mot de passe.</div>
-                <div className="mt-3 [&>*]:bg-gray-100 [&>*]:p-3 [&>*]:rounded-xl flex flex-col gap-3 [&>*]:focus:outline-none">
-                    <input type="email" placeholder="Adresse courriel" {...email} />
-                    <input type="password" placeholder="Mot de passe" {...password} />
+                <div className="text-xl font-bold text-center mb-4">
+                    Connexion
                 </div>
-                <div className="text-red-500 pt-3">{error}</div>
+                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+
+                    <p className="font-medium text-sm mb-2">
+                        Comptes démo
+                    </p>
+
+                    <div className="text-xs text-gray-600 space-y-2">
+                        <div>
+                            <p className="font-medium text-gray-700">Admin</p>
+                            <p>admin@exemple.com</p>
+                            <p>Mot de passe : Planix2026!</p>
+                        </div>
+
+                        <div>
+                            <p className="font-medium text-gray-700">Employé</p>
+                            <p>daniela.sol@exemple.com</p>
+                            <p>Mot de passe : Planix2268$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="text-sm text-gray-600 text-center mb-3">
+                    Saisissez votre email et votre mot de passe.
+                </div>
+
+                <div className="mt-3 [&>*]:bg-gray-100 [&>*]:p-3 [&>*]:rounded-xl flex flex-col gap-3 [&>*]:focus:outline-none">
+                    <input
+                        type="email"
+                        placeholder="Adresse courriel"
+                        {...email}
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Mot de passe"
+                        {...password}
+                    />
+                </div>
+
+                <div className="text-red-500 pt-3">
+                    {error}
+                </div>
+
                 <hr className="mb-3 mt-1" />
+
                 <div className="flex [&>*]:flex-1">
-                    <Button fct={tryLogin} disabled={isLoading}>
+                    <Button
+                        fct={tryLogin}
+                        disabled={isLoading}
+                    >
                         {isLoading ? "Chargement..." : "Se connecter"}
                     </Button>
                 </div>
             </div>
         </div>
-
     );
 }

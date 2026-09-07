@@ -26,9 +26,9 @@ namespace planix_api.Data
             {
                 Id = "11111111-1111-1111-1111-111111111111",
                 UserName = "Admin",
-                Email = "admin@gmail.com",
+                Email = "admin@exemple.com",
                 NormalizedUserName = "ADMIN",
-                NormalizedEmail = "ADMIN@GMAIL.COM",
+                NormalizedEmail = "ADMIN@EXEMPLE.COM",
                 FirstName = "Admin",
                 LastName = "Planix",
                 SecurityStamp = "fixed-security-stamp-planix-admin"
