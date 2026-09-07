@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 
 "use client"
@@ -314,7 +316,7 @@ export default function AdminPage() {
                                                 <div key={s.id} onClick={(ev) => { ev.stopPropagation(); openEditShiftDialog(s) }} className="bg-blue-100 text-xs p-1 rounded mb-1 flex-1 flex justify-between items-center group">
                                                     <span>
                                                         {s.startTime}h-{s.endTime}h
-                                                        {s.breakMinutes > 0 && <span className="text-gray-500"> ({s.breakMinutes}min)</span>}
+                                                        {s.breakMinutes > 0 && <span className="text-gray-500"> ({s.breakMinutes}h)</span>}
                                                     </span>
                                                     <button onClick={(ev) => { ev.stopPropagation(); deleteShift(s.id) }} className="opacity-0 group-hover:opacity-100 text-red-500 px-1 font-bold">×</button>
                                                 </div>
@@ -334,9 +336,11 @@ export default function AdminPage() {
                                 <DialogDescription>Entrez les heures de début, de fin et la pause pour ce quart de travail.</DialogDescription>
                             </DialogHeader>
                             <div className="flex flex-col gap-3">
+                                
                                 <input type="number" placeholder="Heure début (ex: 9)" value={shiftStart} onChange={e => setShiftStart(e.target.value)} className="border p-2 rounded" />
                                 <input type="number" placeholder="Heure fin (ex: 17)" value={shiftEnd} onChange={e => setShiftEnd(e.target.value)} className="border p-2 rounded" />
-                                <input type="number" placeholder="Pause (minutes)" value={shiftBreak} onChange={e => setShiftBreak(e.target.value)} className="border p-2 rounded" />
+                                <p>Pause (heures)</p>
+                                <input type="number" value={shiftBreak} onChange={e => setShiftBreak(e.target.value)} className="border p-2 rounded" />
                             </div>
                             <DialogFooter>
                                 <button onClick={createShift} className="bg-blue-500 text-white px-4 py-2 rounded"> {editingShiftId ? "Modifier" : "Créer"}</button>
