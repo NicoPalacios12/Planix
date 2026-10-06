@@ -160,7 +160,7 @@ export default function EmployeeHome() {
                                 ))}
 
                                 {calendarDays.map((day, index) => (
-                                    <div key={index} className="border p-2 min-h-[80px]">
+                                    <div key={index} className="border p-2 min-h-20">
                                         {day && (
                                             <>
                                                 <div className="text-sm text-gray-500">{day.slice(8, 10)}</div>

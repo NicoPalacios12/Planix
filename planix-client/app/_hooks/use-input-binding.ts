@@ -4,5 +4,5 @@ export default function useInputBinding(startValue: string) {
 
     const [value, setValue] = useState(startValue);
 
-    return { value: value, onChange: (e: any) => setValue(e.target.value) }
+    return { value: value, onChange: (e: any) => setValue(e.target.value), setValue }
 }
