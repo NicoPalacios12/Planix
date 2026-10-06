@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 "use client";
 
 import Link from "next/link";
 import { createContext, useEffect, useState } from "react";
 import Button from "../_components/_mini-components/button";
 import { useAccount } from "../_hooks/use-account";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type AccountContextType = {
     loggedIn: boolean
@@ -22,29 +23,42 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
     const [loggedIn, setLoggedIn] = useState<boolean>(false);
     const [fullName, setFullName] = useState<string>("");
     const account = useAccount();
+    const pathname = usePathname();
+    const [allowedPath, setAllowedPath] = useState<string | null>(null);
 
 
     useEffect(() => {
 
-        if (localStorage.getItem("token")) setLoggedIn(true);
-        const jsonFullName = localStorage.getItem("fullName");
-        if (jsonFullName) setFullName(jsonFullName);
+        const token = localStorage.getItem("token");
+        const roles: string[] = JSON.parse(localStorage.getItem("roles") ?? "[]");
 
-    }, []);
+        setLoggedIn(!!token);
+        setFullName(localStorage.getItem("fullName") ?? "");
+
+        const isProtected = ["/home/admin", "/home/employee", "/home/profile"].some(p => pathname.startsWith(p));
+
+        if (!token && isProtected) {
+            router.replace("/home/account/login");
+            return;
+        }
+
+        if (token && (pathname.startsWith("/home/account/login") || (pathname.startsWith("/home/admin") && !roles.includes("Admin")))) {
+            account.redirectByRole(roles);
+            return;
+        }
+
+        setAllowedPath(pathname);
+
+    }, [pathname]);
 
 
     return (
         <div>
             <AccountContext.Provider value={{ loggedIn, setLoggedIn, fullName, setFullName }}>
-                <header className="w-full bg-white border-b-1 border-b-gray-300 flex justify-between fixed z-3">
-                    <Link href="/home"><div className="text-orange-600 font-bold text-3xl p-3 tracking-tighter cursor-pointer">PLANIX</div></Link>
+                <header className="w-full  flex justify-between fixed z-3 bg-transparent">
+
 
                     <div className="flex items-center pr-2 gap-2">
-                        {!loggedIn && (
-                            <>
-                                <Link href="/home/account/login"><Button>Connexion</Button></Link>
-                            </>
-                        )}
                         {loggedIn && (
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">{fullName}</span>
@@ -59,10 +73,9 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
                     </div>
                 </header>
 
-                <main className="pt-[61px]">
-
-                    <div className="ml-0 lg:ml-[250px]">
-                        {children}
+                <main>
+                    <div>
+                        {allowedPath === pathname && children}
                     </div>
                 </main>
             </AccountContext.Provider>

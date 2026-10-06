@@ -47,14 +47,14 @@ export function useAccount() {
         localStorage.removeItem("roles");
         localStorage.removeItem("fullName")
         localStorage.removeItem("userId")
-        router.push("/home/account/login");
+        router.replace("/home/account/login");
     }
 
     function redirectByRole(roles: string[]){
         if (roles?.includes("Admin")) {
-            router.push("/home/admin");
+            router.replace("/home/admin");
         } else {
-            router.push("/home/employee");
+            router.replace("/home/employee");
         }
     }
 
