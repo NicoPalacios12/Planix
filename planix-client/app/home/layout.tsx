@@ -26,6 +26,8 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
     const pathname = usePathname();
     const [allowedPath, setAllowedPath] = useState<string | null>(null);
 
+    
+
 
     useEffect(() => {
 
@@ -55,26 +57,43 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
     return (
         <div>
             <AccountContext.Provider value={{ loggedIn, setLoggedIn, fullName, setFullName }}>
-                <header className="w-full  flex justify-between fixed z-3 bg-transparent">
-
-
-                    <div className="flex items-center pr-2 gap-2">
-                        {loggedIn && (
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium">{fullName}</span>
-                                <Button fct={() => router.push("/home/profile")}>Mon profil</Button>
-                                <Button fct={() => {
-                                    account.logOut()
-                                    setLoggedIn(false)
-                                    setFullName("")
-                                }}>Déconnexion</Button>
+                <header className="fixed inset-x-0 top-0 z-40 h-16 bg-brand-navy">
+                    <div className="h-full justify-between">
+                        {
+                            !loggedIn && (
+                            <div className="mx-auto flex h-full max-w-400 items-center px-6">
+                                <Link href="/home" className="text-xl font-bold tracking-tight text-brand-cyan">
+                                    PLANIX
+                                </Link>
                             </div>
-                        )}
+                            )
+                        }
+                        {
+                            loggedIn && (
+                            <div className="mx-auto flex h-full max-w-400 items-center justify-end px-6">
+                                <div className="flex items-center justify-end gap-3">
+                                    <span className="whitespace-nowrap text-sm font-medium text-white">
+                                        {fullName}
+                                    </span>
+                                    <Button variant="ghost" className="px-3 py-1.5 text-sm" fct={() => router.replace("/home/profile")}>
+                                        Mon profil
+                                    </Button>
+                                    <Button variant="ghost" className="px-3 py-1.5 text-sm" fct={() => {
+                                            account.logOut()
+                                            setLoggedIn(false)
+                                            setFullName("")
+                                        }}>
+                                        Déconnexion
+                                    </Button>
+                                </div>
+                            </div>
+                            )
+                        }
                     </div>
                 </header>
 
                 <main>
-                    <div>
+                    <div className="min-h-screen bg-[#f1f5f9] pt-16">
                         {allowedPath === pathname && children}
                     </div>
                 </main>

@@ -15,7 +15,7 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-hero px-6 py-24 text-center">
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 bg-hero px-6 py-24 text-center">
             <section >
                 <h1 className="text-7xl font-bold text-white md:text-7xl">
                     Bienvenue sur <span className="text-brand-cyan">Planix</span>

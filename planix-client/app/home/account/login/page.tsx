@@ -65,7 +65,7 @@ export default function Login() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-hero px-6 py-24 text-white">
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-hero px-6 py-24 text-white">
             <p className="mb-8 text-5xl font-bold tracking-tight text-brand-cyan">Planix</p>
 
             <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40">
@@ -95,11 +95,6 @@ export default function Login() {
                         className="mt-2 w-full rounded-md bg-brand-cyan py-3 font-semibold text-[#101057] hover:bg-brand-cyan hover:brightness-110">
                         {isLoading ? "Chargement..." : "Se connecter"}
                     </Button>
-                    {isLoading && (
-                        <p className="text-center text-xs text-white/60">
-                            Le serveur gratuit peut mettre jusqu&apos;à une minute à se réveiller.
-                        </p>
-                    )}
                 </form>
                 <div className="mt-6">
                     <p className="mb-2 text-center text-xs text-white/50">Essayer avec un compte démo</p>

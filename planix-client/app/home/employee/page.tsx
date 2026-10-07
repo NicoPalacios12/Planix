@@ -76,7 +76,7 @@ export default function EmployeeHome() {
     }
 
     function getDayName(dateString: string) {
-        const date = new Date(dateString)
+        const date = new Date(dateString + "T12:00:00") 
         const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
         return jours[date.getDay()]
     }
