@@ -10,6 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Fragment, useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { useShift } from "@/app/_hooks/use-shift";
+import Button from "@/app/_components/_mini-components/button";
+
+const tabTrigger =
+    "h-auto flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-2 text-sm font-medium text-muted-foreground shadow-none after:hidden " +
+    "hover:text-brand-navy " +
+    "data-[state=active]:border-b-brand-navy data-[state=active]:bg-transparent data-[state=active]:text-brand-navy"
+
+const statusStyles: Record<string, { label: string; className: string }> = {
+    Pending: { label: "En attente", className: "bg-amber-100 text-amber-800" },
+    Approved: { label: "Approuvé", className: "bg-green-100 text-green-800" },
+    Rejected: { label: "Refusé", className: "bg-red-100 text-red-800" },
+}
 
 export default function EmployeeHome() {
     
@@ -117,74 +129,105 @@ export default function EmployeeHome() {
     }, [])
 
     return (
-    <div className="p-6">
-        <Tabs defaultValue="horaires">
-                <TabsList> 
-                    <TabsTrigger value="horaires">Horaires</TabsTrigger>
-                    <TabsTrigger value="conges">Congés</TabsTrigger>
+        <div className="mx-auto w-full max-w-400 px-6 py-6">
+            <Tabs defaultValue="horaires">
+                <TabsList variant="line" className="mb-6 w-full justify-start gap-6 border-b border-border p-0 group-data-horizontal/tabs:h-auto">
+                    <TabsTrigger value="horaires" className={tabTrigger}>Horaires</TabsTrigger>
+                    <TabsTrigger value="conges" className={tabTrigger}>Congés</TabsTrigger>
                 </TabsList>
                 <TabsContent value="conges">
-                    <div className="border p-4 rounded-xl mb-4">
-                        <h3 className="font-medium mb-3">Soumettre une demande</h3>
-                        <div className="flex flex-col gap-2">
-                            <input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)} className="border p-2 rounded" />
-                            <input type="date" value={newEndDate} onChange={e => setNewEndDate(e.target.value)} className="border p-2 rounded" />
-                            <input type="text" placeholder="Raison" value={newReason} onChange={e => setNewReason(e.target.value)} className="border p-2 rounded" />
-                            <button onClick={createLeaveRequest} className="bg-blue-500 text-white p-2 rounded">Soumettre</button>
-                        </div>
-                    </div>
+                    <div className="grid items-start gap-6 lg:grid-cols-[400px_1fr]">
 
-                    <div className="flex flex-col gap-3">
-                        {myLeaveRequests.map((c: any) => (
-                            <div key={c.id} className="border p-4 rounded-xl">
-                                <div className="font-medium">{c.startDate.slice(0,10)} → {c.endDate.slice(0,10)}</div>
-                                {c.reason && <div className="text-sm text-gray-600">{c.reason}</div>}
-                                <div className="text-sm">Statut : {c.status}</div>
+                        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                            <h3 className="mb-4 text-base font-semibold text-card-foreground">Soumettre une demande</h3>
+                            <div className="flex flex-col gap-4">
+                                <label className="flex flex-col gap-1 text-sm font-medium">
+                                    Date de début
+                                    <input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)}
+                                        className="rounded-md border border-border p-2 font-normal" />
+                                </label>
+                                <label className="flex flex-col gap-1 text-sm font-medium">
+                                    Date de fin
+                                    <input type="date" value={newEndDate} onChange={e => setNewEndDate(e.target.value)}
+                                        className="rounded-md border border-border p-2 font-normal" />
+                                </label>
+                                <label className="flex flex-col gap-1 text-sm font-medium">
+                                    Raison
+                                    <input type="text" value={newReason} onChange={e => setNewReason(e.target.value)}
+                                        className="rounded-md border border-border p-2 font-normal" />
+                                </label>
+                                <Button
+                                    fct={createLeaveRequest}
+                                    disabled={!newStartDate || !newEndDate}
+                                    className="w-full"
+                                >
+                                    Soumettre
+                                </Button>
                             </div>
-                        ))}
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-card shadow-sm">
+                            <div className="border-b px-5 py-3 text-sm font-semibold text-card-foreground">
+                                Mes demandes ({myLeaveRequests.length})
+                            </div>
+                            <ul className="divide-border divide-y">
+                                {myLeaveRequests.map((c: any) => {
+                                    const status = statusStyles[c.status]
+                                    return (
+                                        <li key={c.id} className="flex items-center justify-between gap-4 px-5 py-3">
+                                            <div>
+                                                <p className="text-sm font-medium text-card-foreground">{c.startDate.slice(0, 10)} → {c.endDate.slice(0, 10)}</p>
+                                                {c.reason && <p className="text-sm text-muted-foreground">{c.reason}</p>}
+                                            </div>
+                                            {status && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>}
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        </div>
+
                     </div>
                 </TabsContent>
 
                 <TabsContent value="horaires">
-                    <div className="p-6">
-                        
-                        <div className="flex items-center gap-4 mb-4">
-                            <button onClick={previousMonth} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">←</button>
-                            <h2 className="text-xl font-bold">{moisNoms[currentMonth]} {currentYear}</h2>
-                            <button onClick={nextMonth} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">→</button>
-                        </div>
-                        
-                            <div className="grid grid-cols-7 border">
-                                {joursAbbr.map(j => (
-                                    <div key={j} className="border p-2 font-medium text-center bg-gray-50">{j}</div>
-                                ))}
+                    <div className="flex items-center gap-4 mb-4">
+                        <button onClick={previousMonth} className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-slate-50">←</button>
+                        <h2 className="min-w-40 text-center text-lg font-semibold">{moisNoms[currentMonth]} {currentYear}</h2>
+                        <button onClick={nextMonth} className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-slate-50">→</button>
+                    </div>
 
-                                {calendarDays.map((day, index) => (
-                                    <div key={index} className="border p-2 min-h-20">
-                                        {day && (
-                                            <>
-                                                <div className="text-sm text-gray-500">{day.slice(8, 10)}</div>
-                                                {myShifts
-                                                    .filter((s: any) => s.date.slice(0, 10) === day)
-                                                    .map((s: any) => (
-                                                        <div key={s.id} className="bg-blue-100 text-xs p-1 rounded mt-1">
+                    <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
+                        <div className="grid min-w-175 grid-cols-7 gap-px bg-border">
+                            {joursAbbr.map(j => (
+                                <div key={j} className="p-3 text-center text-xs font-medium uppercase tracking-widest bg-brand-navy text-white">{j}</div>
+                            ))}
+
+                            {calendarDays.map((day, index) => (
+                                <div key={index} className={`flex min-h-24 flex-col gap-1 p-1.5 ${day ? "bg-card" : "bg-slate-50"}`}>
+                                    {day && (
+                                        <>
+                                            <span className="px-1 text-xs font-medium text-muted-foreground">{day.slice(8, 10)}</span>
+                                            {myShifts
+                                                .filter((s: any) => s.date.slice(0, 10) === day)
+                                                .map((s: any) => (
+                                                    <div key={s.id} className="flex flex-col gap-0.5 rounded-md border border-l-4 border-l-brand-navy bg-card px-2.5 py-2">
+                                                        <span className="text-sm font-semibold text-foreground">
                                                             {s.startTime}h-{s.endTime}h
-                                                            {s.breakMinutes  > 0 && ` (Pause ${s.breakMinutes }h)`}
-                                                        </div>
-                                                    ))
-                                                }
-                                            </>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                                                        </span>
+                                                        {s.breakMinutes > 0 && <span className="text-xs text-muted-foreground">Pause {s.breakMinutes}h</span>}
+                                                    </div>
+                                                ))
+                                            }
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </TabsContent>
-
             </Tabs>
-    </div>
-
-)
+        </div>
+    )
 
 
 }
