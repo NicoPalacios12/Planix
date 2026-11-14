@@ -45,6 +45,10 @@ namespace planix_api.Controllers
             {
                 return NotFound();
             }
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && schedule.UserId != userId) return NotFound();
 
             return Ok(schedule);
         }

@@ -47,12 +47,17 @@ namespace planix_api.Controllers
                 return NotFound();
             }
 
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && leaveRequest.UserId != userId) return NotFound();
+
             return leaveRequest;
         }
 
         [HttpGet("mine")]
         [Authorize]
-        public async Task<ActionResult<LeaveRequest>> GetMyLeaveRequests() 
+        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetMyLeaveRequests() 
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized();
@@ -91,14 +96,16 @@ namespace planix_api.Controllers
         [Authorize]
         public async Task<ActionResult<LeaveRequest>> PostLeaveRequest(CreateLeaveRequestDTO dto)
         {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
             LeaveRequest leaveRequest = new LeaveRequest
             {
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
-                UserId = dto.UserId
-
+                UserId = userId
             };
+
             LeaveRequest? newLeaveRequest = await _leaveRequestService.Create(leaveRequest);
             if (newLeaveRequest == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
@@ -109,7 +116,26 @@ namespace planix_api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteLeaveRequest(int id)
         {
-            bool deletedSuccess = await _leaveRequestService.Delete(id);
+            var leaveRequest = await _leaveRequestService.GetById(id);
+
+            if (leaveRequest == null) return NotFound();
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin)
+            {
+                if(leaveRequest.UserId != userId)
+                {
+                    return NotFound();
+                }
+                if(leaveRequest.Status != "Pending")
+                {
+                    return BadRequest(new { Message = "Only pending requests can be deleted." });
+                }
+            }
+
+            bool deletedSuccess = await _leaveRequestService.Delete(leaveRequest.Id);
 
             if (!deletedSuccess)
             {
@@ -119,6 +145,5 @@ namespace planix_api.Controllers
             return Ok(new { Message = "Deletion successful." });
         }
 
-        
     }
 }

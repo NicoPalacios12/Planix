@@ -100,10 +100,10 @@ export default function EmployeeHome() {
     }
 
     async function createLeaveRequest() {
-        const userId = localStorage.getItem("userId")
-        if (!userId || !newStartDate || !newEndDate) return
+        if (!newStartDate || !newEndDate) return
 
-        await leaveRequest.create(newStartDate + "T12:00:00", newEndDate + "T12:00:00", newReason, userId)
+        await leaveRequest.create(newStartDate + "T12:00:00", newEndDate + "T12:00:00", newReason)
+        
         setNewStartDate("")
         setNewEndDate("")
         setNewReason("")

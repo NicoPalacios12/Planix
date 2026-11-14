@@ -18,11 +18,13 @@ namespace planix_api.Controllers
     public class ShiftsController : ControllerBase
     {
         private readonly ShiftService _shiftService;
+        private readonly ScheduleService _scheduleService;
 
 
-        public ShiftsController(ShiftService shiftService)
+        public ShiftsController(ShiftService shiftService, ScheduleService scheduleService)
         {
             _shiftService = shiftService;
+            _scheduleService = scheduleService;
             
         }
 
@@ -40,16 +42,29 @@ namespace planix_api.Controllers
         [Authorize()]
         public async Task<ActionResult<IEnumerable<Shift>>> GetByScheduleId(int scheduleId)
         {
+            Schedule? schedule = await _scheduleService.GetById(scheduleId);
 
+            if(schedule == null)
+            {
+                return NotFound();
+            }
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && schedule.UserId != userId) return NotFound();
 
             List<Shift>? shifts = await _shiftService.GetByScheduleId(scheduleId);
+
             if (shifts == null) return StatusCode(StatusCodes.Status500InternalServerError);
+
 
             return Ok(shifts);
         }
 
 
         [HttpGet("{id}")]
+        [Authorize()]
         public async Task<ActionResult<Shift>> GetShift(int id)
         {
             var shift = await _shiftService.GetById(id);
@@ -58,6 +73,10 @@ namespace planix_api.Controllers
             {
                 return NotFound();
             }
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && shift.Schedule?.UserId != userId) return NotFound();
 
             return shift;
         }

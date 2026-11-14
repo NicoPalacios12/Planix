@@ -36,6 +36,7 @@ namespace planix_api.Services
             if (!IsContextValid()) return null;
 
             return await _context.Shifts
+                .Include(s => s.Schedule)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
