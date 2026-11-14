@@ -39,8 +39,8 @@ export default function EmployeeHome() {
     const [newEndDate, setNewEndDate] = useState("")    
     const [newReason, setNewReason] = useState("")
 
-    const [currentMonth, setCurrentMonth] = useState(5) // juin = index 5 (0 = janvier)
-    const [currentYear, setCurrentYear] = useState(2026)
+    const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth()) 
+    const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear())
     const joursAbbr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
     const moisNoms = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
 
@@ -96,6 +96,7 @@ export default function EmployeeHome() {
     async function getMyLeaveRequests() {
 
         const mine = await leaveRequest.getMine()
+        if(!mine) return
         setMyLeaveRequests(mine)
     }
 
@@ -113,10 +114,11 @@ export default function EmployeeHome() {
     async function getMySchedule(){
 
         const mine = await schedule.getMySchedule()
+        if(!mine) return
         setMySchedules(mine)
 
         const shifts = await Promise.all(mine.map((s: any) => shift.getByScheduleId(s.id)))
-        setMyShifts(shifts.flat())
+        setMyShifts(shifts.flat().filter(Boolean))
     }
 
     
